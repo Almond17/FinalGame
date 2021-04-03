@@ -6,6 +6,8 @@ public class Projectile : MonoBehaviour
 {
     Rigidbody2D rigidbody2d;
 
+    public RubyController r;
+
     void Awake()
     {
         rigidbody2d = GetComponent<Rigidbody2D>();
@@ -30,8 +32,18 @@ public class Projectile : MonoBehaviour
         if (e != null)
         {
             e.Fix();
+            r = FindObjectOfType(typeof(RubyController)) as RubyController;
+            r.IncreaseCount();
         }
 
         Destroy(gameObject);
+
+        HardEnemyController h = other.collider.GetComponent<HardEnemyController>();
+        if (h != null)
+        {
+            h.Fix();
+            r = FindObjectOfType(typeof(RubyController)) as RubyController;
+            r.IncreaseCount();
+        }
     }
 }
