@@ -45,5 +45,12 @@ public class Projectile : MonoBehaviour
             r = FindObjectOfType(typeof(RubyController)) as RubyController;
             r.IncreaseCount();
         }
+
+        HardestEnemy he = other.collider.GetComponent<HardestEnemy>();
+        if(he != null)
+        {
+            r = FindObjectOfType(typeof(RubyController)) as RubyController;
+            r.controlhardestenemy();
+        }
     }
 }

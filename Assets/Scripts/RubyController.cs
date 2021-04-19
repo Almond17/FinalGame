@@ -21,7 +21,9 @@ public class RubyController : MonoBehaviour
     public GameObject projectilePrefab;
 
     public Text countText;
-    public  int count;
+    public int count;
+
+    public int hardestenemycounter = 0;
 
     //check
     public GameObject cam;
@@ -30,8 +32,13 @@ public class RubyController : MonoBehaviour
     public Text WinText;
     public Text LoseText;
 
+    public Scene scene;
+
     public AudioClip throwSound;
     public AudioClip hitSound;
+    public AudioClip cogpickup;
+    public AudioClip frogchat;
+    public float speeduptimer=5;
 
     public AudioClip WinSound;
     public AudioClip LossSound;
@@ -42,6 +49,8 @@ public class RubyController : MonoBehaviour
     public float timeInvincible = 2.0f;
     bool isInvincible;
     float invincibleTimer;
+
+    public HardestEnemy he;
 
     Rigidbody2D rigidbody2d;
     float horizontal;
@@ -71,14 +80,23 @@ public class RubyController : MonoBehaviour
 
         currentHealth = maxHealth;
 
-        audioSource = GetComponent<AudioSource>();
+        WinText.text = "";
+
+       audioSource = GetComponent<AudioSource>();
+
+        scene = SceneManager.GetActiveScene();
+        if(scene.name == "Scene2")
+        {
+            count = 5;
+            countText.text = "Fixed Robots:" + count.ToString();
+        }
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(count == 8)
+        if (count == 10)
         {
             speed = 0.0f;
             WinText.text = "You Win! Game created by Jacob Stuart. Press R to Restart";
@@ -86,12 +104,22 @@ public class RubyController : MonoBehaviour
             //Destroy(gameObject);
             if (Input.GetKeyDown(KeyCode.R))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene("MainScene 1");
             }
             //Destroy(gameObject);
         }
 
-        if(count == 4)
+        if(speed == 6.0f && speeduptimer > 0.0 )
+        {
+            speeduptimer -= Time.deltaTime;
+        }
+        else if(speed == 6.0f && speeduptimer <= 0.0)
+        {
+            speed = 3.0f;
+        }
+
+        scene = SceneManager.GetActiveScene();
+        if (count == 5 && scene.name == "MainScene 1")
         {
             cam = GameObject.Find("CM vcam1");
             secretCam = GameObject.Find("CM vcam2");
@@ -101,7 +129,7 @@ public class RubyController : MonoBehaviour
                 WinText.text = "Talk to Jambi to visit stage two!";
             }
 
-            if(Input.GetKeyDown(KeyCode.X))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
                 if (hit.collider != null)
@@ -110,9 +138,11 @@ public class RubyController : MonoBehaviour
                     cam.SetActive(false);
 
                     //confiner.InvalidatePathCache();
+                    SceneManager.LoadScene("Scene2");
                     WinText.text = "";
-                    transform.position = new Vector3(53.0f, 4.0f, 0f);
-                } 
+                    PlaySound(frogchat);
+                    //transform.position = new Vector3(53.0f, 4.0f, 0f);
+                }
             }
         }
 
@@ -153,7 +183,7 @@ public class RubyController : MonoBehaviour
                 isInvincible = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.C)  && cog > 0)
+        if (Input.GetKeyDown(KeyCode.C) && cog > 0)
         {
             Launch();
             cog = cog - 1;
@@ -169,9 +199,31 @@ public class RubyController : MonoBehaviour
                 if (character != null)
                 {
                     character.DisplayDialog();
+                    PlaySound(frogchat);
                 }
             }
         }
+    }
+
+    public void controlhardestenemy()
+    {
+        hardestenemycounter++;
+
+        if(hardestenemycounter == 2)
+        {
+            hardestenemycounter = 0;
+            he = FindObjectOfType(typeof(HardestEnemy)) as HardestEnemy;
+            if (he != null)
+            {
+                he.Fix();
+                IncreaseCount();
+            }
+        }
+    }
+
+    public void addspeed() 
+    {
+        speed = 6.0f;
     }
 
     void FixedUpdate()
@@ -204,7 +256,7 @@ public class RubyController : MonoBehaviour
 
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
 
-        if(currentHealth == 0)
+        if (currentHealth == 0)
         {
             LoseText.text = "You lose! Press R to Restart";
             //Destroy(gameObject);
@@ -240,5 +292,6 @@ public class RubyController : MonoBehaviour
     {
         cog = cog + 4;
         CogText.text = "Cogs:" + cog.ToString();
+        PlaySound(cogpickup);
     }
 }
